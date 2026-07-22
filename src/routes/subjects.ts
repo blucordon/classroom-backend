@@ -7,23 +7,42 @@ const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { search, department, page = 1, limit = 10 } = req.query;
-    const currentPage = Math.max(1, +page);
-    const limitPerPage = Math.max(1, +limit);
+    const { search, department, page, limit } = req.query;
+
+    const searchText =
+      typeof search === "string"
+        ? search
+        : Array.isArray(search)
+          ? search[0]
+          : undefined;
+
+    const departmentText =
+      typeof department === "string"
+        ? department
+        : Array.isArray(department)
+          ? department[0]
+          : undefined;
+
+    const parsedPage = Number.parseInt(String(page ?? "1"), 10);
+    const parsedLimit = Number.parseInt(String(limit ?? "10"), 10);
+
+    const currentPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+    const limitPerPage =
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 10;
     const offset = (currentPage - 1) * limitPerPage;
 
     const filterConditions = [];
-    if (search) {
+    if (searchText) {
       filterConditions.push(
         or(
-          ilike(subjects.name, `%${search}%`),
-          ilike(subjects.code, `%${search}%`),
+          ilike(subjects.name, `%${searchText}%`),
+          ilike(subjects.code, `%${searchText}%`),
         ),
       );
     }
 
-    if (department) {
-      filterConditions.push(ilike(departments.name, `%${department}%`));
+    if (departmentText) {
+      filterConditions.push(ilike(departments.name, `%${departmentText}%`));
     }
 
     const whereClause =
