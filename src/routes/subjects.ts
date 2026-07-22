@@ -61,7 +61,7 @@ router.get("/", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("GET /subjects ERROR:", error);
+    console.error("GET /api/subjects ERROR:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
